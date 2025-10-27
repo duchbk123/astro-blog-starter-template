@@ -1,0 +1,1235 @@
+---
+---
+
+<!DOCTYPE html>
+<section class="invitation-app">
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Montserrat:wght@400;600&family=Roboto:wght@400;500&family=Great+Vibes&display=swap"
+  />
+  <div class="intro">
+    <h1>ThiệpMời Studio</h1>
+    <p>
+      Thiết kế và tạo thiệp mời cá nhân hóa chỉ trong vài bước. Upload template của bạn, nhập thông tin khách
+      mời và để công cụ tự động xuất file chất lượng cao.
+    </p>
+  </div>
+  <div class="workspace">
+    <aside class="controls" aria-label="Bảng điều khiển">
+      <section class="control-block">
+        <h2>1. Upload Template</h2>
+        <p class="hint">Chọn một ảnh nền (PNG/JPG) để làm mẫu thiệp mời.</p>
+        <label class="file-input">
+          <input type="file" id="templateUploader" accept="image/*" />
+          <span>Chọn ảnh...</span>
+        </label>
+        <button type="button" class="secondary" id="clearTemplate" aria-live="polite">Xóa template</button>
+      </section>
+
+      <section class="control-block">
+        <h2>2. Thông tin khách mời</h2>
+        <div class="field-group">
+          <label for="guestPrefix">Prefix</label>
+          <select id="guestPrefix">
+            <option value="Mr.">Mr.</option>
+            <option value="Ms.">Ms.</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="guestName">Tên khách</label>
+          <input type="text" id="guestName" placeholder="Nguyễn Văn A" />
+        </div>
+        <div class="field-group">
+          <label for="guestTitle">Chức vụ</label>
+          <input type="text" id="guestTitle" placeholder="Giám đốc" />
+        </div>
+        <div class="field-group">
+          <label for="guestCompany">Công ty</label>
+          <input type="text" id="guestCompany" placeholder="Công ty ABC" />
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h2>3. Bố cục &amp; Căn chỉnh</h2>
+        <div class="toggle-group" role="group" aria-label="Chọn bố cục">
+          <button type="button" class="toggle active" data-layout="vertical">Dọc</button>
+          <button type="button" class="toggle" data-layout="horizontal">Ngang</button>
+        </div>
+        <div class="toggle-group" role="group" aria-label="Căn chỉnh">
+          <button type="button" class="toggle active" data-align="left">Căn trái</button>
+          <button type="button" class="toggle" data-align="center">Căn giữa</button>
+          <button type="button" class="toggle" data-align="right">Căn phải</button>
+        </div>
+        <div class="lock-row">
+          <label class="switch">
+            <input type="checkbox" id="lockLayout" />
+            <span class="slider"></span>
+          </label>
+          <span class="lock-text">Khóa bố cục</span>
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h2>4. Tùy chỉnh text</h2>
+        <p class="hint">Chọn từng dòng text trên canvas để chỉnh font, kích thước và màu sắc.</p>
+        <div class="field-group readonly">
+          <label>Dòng đang chọn</label>
+          <output id="selectedLabel">Tên khách</output>
+        </div>
+        <div class="field-group">
+          <label for="fontFamily">Font family</label>
+          <select id="fontFamily">
+            <option value="Playfair Display">Playfair Display</option>
+            <option value="Montserrat">Montserrat</option>
+            <option value="Roboto">Roboto</option>
+            <option value="Great Vibes">Great Vibes</option>
+            <option value="Times New Roman">Times New Roman</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="fontSize">Font size <span id="fontSizeValue">48px</span></label>
+          <input type="range" id="fontSize" min="16" max="96" step="1" value="48" />
+        </div>
+        <div class="field-group">
+          <label for="fontColor">Màu sắc</label>
+          <input type="color" id="fontColor" value="#ffffff" />
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h2>5. Tải xuống</h2>
+        <button type="button" class="primary" id="downloadSingle">Download Invitation</button>
+      </section>
+    </aside>
+
+    <div class="preview" aria-live="polite">
+      <div class="preview-frame" id="previewFrame">
+        <div id="previewPlaceholder" class="preview-placeholder">
+          <p>Tải template để bắt đầu thiết kế.</p>
+        </div>
+        <img id="templateImage" alt="Invitation template" hidden />
+        <div id="textGroup" class="text-group orientation-vertical align-left hidden" data-locked="false">
+          <button type="button" id="anchorHandle" class="anchor" aria-label="Kéo để di chuyển văn bản"></button>
+        </div>
+      </div>
+      <div class="bulk-controls">
+        <div class="bulk-row">
+          <h2>8. Bulk Processing</h2>
+          <div class="bulk-actions">
+            <label class="file-input">
+              <input type="file" id="csvUploader" accept=".csv" />
+              <span>Upload CSV</span>
+            </label>
+            <button type="button" class="secondary" id="downloadAll">Download All (ZIP)</button>
+          </div>
+        </div>
+        <div class="bulk-row status">
+          <span id="guestCounter">Guest 0 of 0</span>
+          <div class="nav-buttons">
+            <button type="button" id="prevGuest" class="secondary">Previous</button>
+            <button type="button" id="nextGuest" class="secondary">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="mappingModal" class="mapping-modal">
+    <form method="dialog" id="mappingForm">
+      <h2>Mapping CSV Columns</h2>
+      <p>Chọn cột tương ứng cho từng trường bên dưới.</p>
+      <div class="field-group">
+        <label for="mapPrefix">Prefix</label>
+        <select id="mapPrefix" required></select>
+      </div>
+      <div class="field-group">
+        <label for="mapName">Tên khách</label>
+        <select id="mapName" required></select>
+      </div>
+      <div class="field-group">
+        <label for="mapTitle">Chức vụ</label>
+        <select id="mapTitle" required></select>
+      </div>
+      <div class="field-group">
+        <label for="mapCompany">Công ty</label>
+        <select id="mapCompany" required></select>
+      </div>
+      <div class="modal-actions">
+        <button value="cancel" class="secondary">Hủy</button>
+        <button value="confirm" class="primary">Xác nhận</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="assertive"></div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
+<script type="module">
+  const state = {
+    templateData: null,
+    templateUrl: null,
+    imageWidth: 0,
+    imageHeight: 0,
+    anchor: { x: 60, y: 60 },
+    orientation: "vertical",
+    alignment: "left",
+    locked: false,
+    selectedId: "name",
+    bulkGuests: [],
+    currentGuestIndex: 0,
+    csvRows: [],
+    guestInfo: {
+      prefix: "Mr.",
+      name: "",
+      title: "",
+      company: "",
+    },
+    textConfigs: {
+      prefix: { label: "Prefix", fontFamily: "Playfair Display", fontSize: 32, color: "#ffffff" },
+      name: { label: "Tên khách", fontFamily: "Playfair Display", fontSize: 48, color: "#ffffff" },
+      title: { label: "Chức vụ", fontFamily: "Montserrat", fontSize: 28, color: "#ffffff" },
+      company: { label: "Công ty", fontFamily: "Montserrat", fontSize: 24, color: "#ffffff" },
+    },
+    isExporting: false,
+  };
+
+  const STORAGE_KEYS = {
+    template: "invitation-template",
+    templateName: "invitation-template-name",
+    lock: "invitation-lock",
+    anchor: "invitation-anchor",
+  };
+
+  const elements = {};
+
+  window.addEventListener("DOMContentLoaded", () => {
+    elements.templateUploader = document.getElementById("templateUploader");
+    elements.clearTemplate = document.getElementById("clearTemplate");
+    elements.templateImage = document.getElementById("templateImage");
+    elements.previewFrame = document.getElementById("previewFrame");
+    elements.previewPlaceholder = document.getElementById("previewPlaceholder");
+    elements.textGroup = document.getElementById("textGroup");
+    elements.anchorHandle = document.getElementById("anchorHandle");
+    elements.prefixInput = document.getElementById("guestPrefix");
+    elements.nameInput = document.getElementById("guestName");
+    elements.titleInput = document.getElementById("guestTitle");
+    elements.companyInput = document.getElementById("guestCompany");
+    elements.layoutButtons = Array.from(document.querySelectorAll("button[data-layout]"));
+    elements.alignButtons = Array.from(document.querySelectorAll("button[data-align]"));
+    elements.lockToggle = document.getElementById("lockLayout");
+    elements.fontFamily = document.getElementById("fontFamily");
+    elements.fontSize = document.getElementById("fontSize");
+    elements.fontSizeValue = document.getElementById("fontSizeValue");
+    elements.fontColor = document.getElementById("fontColor");
+    elements.selectedLabel = document.getElementById("selectedLabel");
+    elements.downloadSingle = document.getElementById("downloadSingle");
+    elements.csvUploader = document.getElementById("csvUploader");
+    elements.downloadAll = document.getElementById("downloadAll");
+    elements.prevGuest = document.getElementById("prevGuest");
+    elements.nextGuest = document.getElementById("nextGuest");
+    elements.guestCounter = document.getElementById("guestCounter");
+    elements.mappingModal = document.getElementById("mappingModal");
+    elements.mappingForm = document.getElementById("mappingForm");
+    elements.toast = document.getElementById("toast");
+    elements.mapSelects = {
+      prefix: document.getElementById("mapPrefix"),
+      name: document.getElementById("mapName"),
+      title: document.getElementById("mapTitle"),
+      company: document.getElementById("mapCompany"),
+    };
+    elements.mappingConfirm = elements.mappingForm?.querySelector('button[value="confirm"]');
+
+    restoreFromStorage();
+    bindEvents();
+    updateLayoutButtons();
+    updateAlignmentButtons();
+    renderGuestForm();
+    updateSelection(state.selectedId);
+    updateGuestCounter();
+  });
+
+  function bindEvents() {
+    elements.templateUploader?.addEventListener("change", handleTemplateUpload);
+    elements.clearTemplate?.addEventListener("click", clearTemplate);
+    elements.prefixInput?.addEventListener("change", (e) => updateGuestValue("prefix", e.target.value));
+    elements.nameInput?.addEventListener("input", (e) => updateGuestValue("name", e.target.value));
+    elements.titleInput?.addEventListener("input", (e) => updateGuestValue("title", e.target.value));
+    elements.companyInput?.addEventListener("input", (e) => updateGuestValue("company", e.target.value));
+
+    elements.layoutButtons?.forEach((btn) =>
+      btn.addEventListener("click", () => {
+        state.orientation = btn.dataset.layout;
+        updateLayoutButtons();
+        renderTextGroup();
+      }),
+    );
+
+    elements.alignButtons?.forEach((btn) =>
+      btn.addEventListener("click", () => {
+        state.alignment = btn.dataset.align;
+        updateAlignmentButtons();
+        renderTextGroup();
+      }),
+    );
+
+    elements.lockToggle?.addEventListener("change", (e) => {
+      state.locked = e.target.checked;
+      persistLock();
+      renderTextGroup();
+    });
+
+    elements.fontFamily?.addEventListener("change", (e) => updateTextConfig("fontFamily", e.target.value));
+    elements.fontSize?.addEventListener("input", (e) => updateTextConfig("fontSize", Number(e.target.value)));
+    elements.fontColor?.addEventListener("input", (e) => updateTextConfig("color", e.target.value));
+
+    elements.anchorHandle?.addEventListener("pointerdown", startAnchorDrag);
+
+    elements.downloadSingle?.addEventListener("click", () => {
+      if (!ensureTemplateLoaded()) return;
+      exportSingleInvitation();
+    });
+
+    elements.csvUploader?.addEventListener("change", handleCsvUpload);
+    elements.downloadAll?.addEventListener("click", () => {
+      if (!ensureTemplateLoaded()) return;
+      if (!state.bulkGuests.length) {
+        showToast("Chưa có danh sách khách mời.");
+        return;
+      }
+      downloadAllInvitations();
+    });
+
+    elements.prevGuest?.addEventListener("click", () => {
+      if (!state.bulkGuests.length) return;
+      state.currentGuestIndex = Math.max(0, state.currentGuestIndex - 1);
+      applyGuestFromBulk();
+    });
+    elements.nextGuest?.addEventListener("click", () => {
+      if (!state.bulkGuests.length) return;
+      state.currentGuestIndex = Math.min(state.bulkGuests.length - 1, state.currentGuestIndex + 1);
+      applyGuestFromBulk();
+    });
+
+    elements.mappingModal?.addEventListener("close", () => {
+      if (elements.mappingModal.returnValue === "confirm") {
+        completeCsvMapping();
+      }
+    });
+
+    elements.mappingConfirm?.addEventListener("click", (event) => {
+      if (!mappingSelectionsValid()) {
+        event.preventDefault();
+        event.stopPropagation();
+        showToast("Vui lòng chọn đủ cột cho từng trường");
+      }
+    });
+
+    window.addEventListener("resize", () => clampAnchor());
+  }
+
+  function restoreFromStorage() {
+    if (typeof localStorage === "undefined") return;
+    const storedTemplate = localStorage.getItem(STORAGE_KEYS.template);
+    const storedLock = localStorage.getItem(STORAGE_KEYS.lock);
+    const storedAnchor = localStorage.getItem(STORAGE_KEYS.anchor);
+    if (storedTemplate) {
+      state.templateData = storedTemplate;
+      state.templateUrl = storedTemplate;
+      loadTemplateImage(storedTemplate);
+    }
+    if (storedLock) {
+      state.locked = storedLock === "true";
+      if (elements.lockToggle) elements.lockToggle.checked = state.locked;
+    }
+    if (storedAnchor) {
+      try {
+        const parsed = JSON.parse(storedAnchor);
+        if (parsed && typeof parsed.x === "number" && typeof parsed.y === "number") {
+          state.anchor = parsed;
+        }
+      } catch (error) {
+        console.warn("Invalid anchor in storage", error);
+      }
+    }
+  }
+
+  function persistLock() {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(STORAGE_KEYS.lock, String(state.locked));
+  }
+
+  function persistAnchor() {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(STORAGE_KEYS.anchor, JSON.stringify(state.anchor));
+  }
+
+  function handleTemplateUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      state.templateData = dataUrl;
+      state.templateUrl = dataUrl;
+      loadTemplateImage(dataUrl);
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem(STORAGE_KEYS.template, dataUrl);
+      }
+      showToast(`Đã tải template: ${file.name}`);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearTemplate() {
+    state.templateData = null;
+    state.templateUrl = null;
+    state.imageWidth = 0;
+    state.imageHeight = 0;
+    elements.templateImage?.setAttribute("hidden", "");
+    elements.previewPlaceholder?.classList.remove("hidden");
+    elements.templateImage?.setAttribute("src", "");
+    elements.textGroup?.classList.add("hidden");
+    if (elements.templateUploader) {
+      elements.templateUploader.value = "";
+    }
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem(STORAGE_KEYS.template);
+    }
+    showToast("Đã xóa template");
+  }
+
+  function loadTemplateImage(dataUrl) {
+    elements.templateImage?.setAttribute("src", dataUrl);
+    elements.templateImage?.removeAttribute("hidden");
+    elements.previewPlaceholder?.classList.add("hidden");
+    const img = new Image();
+    img.onload = () => {
+      state.imageWidth = img.width;
+      state.imageHeight = img.height;
+      elements.templateImage.style.width = `${img.width}px`;
+      elements.templateImage.style.height = `${img.height}px`;
+      elements.previewFrame.style.width = `${img.width}px`;
+      elements.previewFrame.style.height = `${img.height}px`;
+      elements.textGroup?.classList.remove("hidden");
+      renderTextGroup();
+    };
+    img.src = dataUrl;
+  }
+
+  function renderGuestForm() {
+    if (elements.prefixInput) elements.prefixInput.value = state.guestInfo.prefix;
+    if (elements.nameInput) elements.nameInput.value = state.guestInfo.name;
+    if (elements.titleInput) elements.titleInput.value = state.guestInfo.title;
+    if (elements.companyInput) elements.companyInput.value = state.guestInfo.company;
+  }
+
+  function updateGuestValue(key, value) {
+    state.guestInfo[key] = value;
+    if (state.bulkGuests.length) {
+      state.bulkGuests[state.currentGuestIndex] = { ...state.bulkGuests[state.currentGuestIndex], [key]: value };
+    }
+    renderTextGroup();
+  }
+
+  function updateLayoutButtons() {
+    elements.layoutButtons.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.layout === state.orientation);
+    });
+    elements.textGroup.dataset.orientation = state.orientation;
+  }
+
+  function updateAlignmentButtons() {
+    elements.alignButtons.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.align === state.alignment);
+    });
+    elements.textGroup.dataset.align = state.alignment;
+  }
+
+  function updateTextConfig(key, value) {
+    const current = state.textConfigs[state.selectedId];
+    if (!current) return;
+    current[key] = value;
+    if (key === "fontSize") {
+      elements.fontSizeValue.textContent = `${value}px`;
+    }
+    renderTextGroup();
+  }
+
+  function updateSelection(id) {
+    state.selectedId = id;
+    const config = state.textConfigs[id];
+    if (!config) return;
+    if (elements.fontFamily) elements.fontFamily.value = config.fontFamily;
+    if (elements.fontSize) elements.fontSize.value = config.fontSize;
+    if (elements.fontColor) elements.fontColor.value = config.color;
+    elements.fontSizeValue.textContent = `${config.fontSize}px`;
+    elements.selectedLabel.textContent = config.label;
+    renderTextGroup();
+  }
+
+  function renderTextGroup() {
+    if (!elements.textGroup) return;
+    const { prefix, name, title, company } = state.guestInfo;
+    const parts = [
+      { id: "prefix", value: prefix },
+      {
+        id: "name",
+        value: state.isExporting ? name : name || "Tên khách",
+      },
+      { id: "title", value: title },
+      { id: "company", value: company },
+    ];
+    elements.textGroup.innerHTML = "";
+    elements.textGroup.appendChild(elements.anchorHandle);
+
+    elements.textGroup.classList.toggle("locked", state.locked);
+    elements.anchorHandle.toggleAttribute("hidden", state.locked);
+
+    elements.textGroup.dataset.orientation = state.orientation;
+    elements.textGroup.dataset.align = state.alignment;
+
+    parts
+      .filter((item) => item.value)
+      .forEach((item, index, array) => {
+        const config = state.textConfigs[item.id];
+        const span = document.createElement("span");
+        span.dataset.elementId = item.id;
+        span.className = "text-element";
+        span.textContent = item.value;
+        span.style.fontFamily = `'${config.fontFamily}', sans-serif`;
+        span.style.fontSize = `${config.fontSize}px`;
+        span.style.color = config.color;
+        span.classList.toggle("selected", item.id === state.selectedId && !state.locked);
+        span.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (state.locked) return;
+          updateSelection(item.id);
+        });
+        elements.textGroup.appendChild(span);
+
+        if (state.orientation === "horizontal" && index < array.length - 1) {
+          const separator = document.createElement("span");
+          separator.className = "separator";
+          separator.textContent = "|";
+          elements.textGroup.appendChild(separator);
+        }
+      });
+
+    positionTextGroup();
+  }
+
+  function positionTextGroup() {
+    if (!elements.textGroup) return;
+    clampAnchor();
+    elements.textGroup.style.transform = `translate(${state.anchor.x}px, ${state.anchor.y}px)`;
+    persistAnchor();
+  }
+
+  function clampAnchor() {
+    if (!elements.previewFrame || !elements.textGroup) return;
+    const previewRect = elements.previewFrame.getBoundingClientRect();
+    const groupRect = elements.textGroup.getBoundingClientRect();
+    const maxX = Math.max(0, previewRect.width - groupRect.width);
+    const maxY = Math.max(0, previewRect.height - groupRect.height);
+    state.anchor.x = Math.min(Math.max(state.anchor.x, 0), maxX);
+    state.anchor.y = Math.min(Math.max(state.anchor.y, 0), maxY);
+  }
+
+  function startAnchorDrag(event) {
+    if (state.locked) return;
+    event.preventDefault();
+    elements.anchorHandle.setPointerCapture(event.pointerId);
+    const previewRect = elements.previewFrame.getBoundingClientRect();
+    const groupRect = elements.textGroup.getBoundingClientRect();
+    const offsetX = event.clientX - previewRect.left - state.anchor.x;
+    const offsetY = event.clientY - previewRect.top - state.anchor.y;
+
+    function onPointerMove(e) {
+      const rawX = e.clientX - previewRect.left - offsetX;
+      const rawY = e.clientY - previewRect.top - offsetY;
+      const maxX = Math.max(0, previewRect.width - groupRect.width);
+      const maxY = Math.max(0, previewRect.height - groupRect.height);
+      state.anchor.x = Math.min(Math.max(rawX, 0), maxX);
+      state.anchor.y = Math.min(Math.max(rawY, 0), maxY);
+      elements.textGroup.style.transform = `translate(${state.anchor.x}px, ${state.anchor.y}px)`;
+    }
+
+    function onPointerUp() {
+      elements.anchorHandle.releasePointerCapture(event.pointerId);
+      elements.anchorHandle.removeEventListener("pointermove", onPointerMove);
+      elements.anchorHandle.removeEventListener("pointerup", onPointerUp);
+      persistAnchor();
+    }
+
+    elements.anchorHandle.addEventListener("pointermove", onPointerMove);
+    elements.anchorHandle.addEventListener("pointerup", onPointerUp);
+  }
+
+  function ensureTemplateLoaded() {
+    if (!state.templateUrl) {
+      showToast("Hãy upload template trước khi tải xuống");
+      return false;
+    }
+    return true;
+  }
+
+  async function exportSingleInvitation() {
+    const guest = { ...state.guestInfo };
+    const blob = await renderToCanvasBlob(guest, "image/jpeg");
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${buildFileName(guest)}.jpg`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast("Đã tải thiệp cho khách hiện tại");
+  }
+
+  async function downloadAllInvitations() {
+    await waitForFonts();
+    if (!window.JSZip) {
+      showToast("Không thể tải thư viện ZIP");
+      return;
+    }
+    const zip = new window.JSZip();
+    for (let index = 0; index < state.bulkGuests.length; index += 1) {
+      const guest = state.bulkGuests[index];
+      const blob = await renderToCanvasBlob(guest, "image/png");
+      if (!blob) continue;
+      const arrayBuffer = await blob.arrayBuffer();
+      zip.file(`${buildFileName(guest)}.png`, arrayBuffer);
+    }
+    const content = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(content);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "invitations.zip";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    showToast(`Đã tạo ZIP cho ${state.bulkGuests.length} khách mời`);
+  }
+
+  async function renderToCanvasBlob(guest, format = "image/png") {
+    if (!state.templateUrl) return null;
+    await waitForFonts();
+    const originalGuest = { ...state.guestInfo };
+    const shouldSwap =
+      guest &&
+      (guest.prefix !== originalGuest.prefix ||
+        guest.name !== originalGuest.name ||
+        guest.title !== originalGuest.title ||
+        guest.company !== originalGuest.company);
+
+    if (shouldSwap) {
+      state.guestInfo = { ...guest };
+    }
+    state.isExporting = true;
+    renderTextGroup();
+
+    const canvas = document.createElement("canvas");
+    const width = state.imageWidth || elements.templateImage.naturalWidth;
+    const height = state.imageHeight || elements.templateImage.naturalHeight;
+    if (!width || !height) {
+      showToast("Không xác định được kích thước template");
+      return null;
+    }
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, width, height);
+
+    const img = await loadImage(state.templateUrl);
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const previewRect = elements.previewFrame.getBoundingClientRect();
+    const scaleX = width / previewRect.width;
+    const scaleY = height / previewRect.height;
+
+    const elementsToDraw = Array.from(elements.textGroup.querySelectorAll(".text-element, .separator"));
+    const baseRect = elements.previewFrame.getBoundingClientRect();
+
+    elementsToDraw.forEach((node) => {
+      const rect = node.getBoundingClientRect();
+      const x = (rect.left - baseRect.left) * scaleX;
+      const y = (rect.top - baseRect.top) * scaleY;
+      const id = node.dataset.elementId;
+      const isSeparator = node.classList.contains("separator");
+      const text = isSeparator ? "|" : node.textContent || "";
+      const config = id ? state.textConfigs[id] : null;
+      ctx.save();
+      ctx.textBaseline = "top";
+      ctx.textAlign = "left";
+      const fontSize = isSeparator ? (config ? config.fontSize : 32) : config.fontSize;
+      const fontFamily = isSeparator ? "Montserrat" : config.fontFamily;
+      ctx.font = `${fontSize * scaleY}px '${fontFamily}'`;
+      ctx.fillStyle = isSeparator ? "rgba(255,255,255,0.6)" : config.color;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    });
+
+    const mime = format === "image/jpeg" ? "image/jpeg" : "image/png";
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.92));
+
+    state.isExporting = false;
+
+    if (shouldSwap) {
+      state.guestInfo = originalGuest;
+      renderTextGroup();
+      renderGuestForm();
+    } else {
+      renderTextGroup();
+    }
+
+    return blob;
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = src;
+    });
+  }
+
+  async function waitForFonts() {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+  }
+
+  function buildFileName(guest) {
+    const parts = [guest.name || "Khach", guest.title || "", guest.company || ""]
+      .map((part) => part && part.replace(/[\\/:*?"<>|]/g, " ").trim())
+      .filter(Boolean);
+    return parts.length ? parts.join(" - ") : "invitation";
+  }
+
+  function handleCsvUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result;
+      parseCsv(text, file.name);
+    };
+    reader.readAsText(file);
+  }
+
+  function parseCsv(text, fileName) {
+    if (!window.Papa) {
+      showToast("Không thể tải thư viện CSV");
+      return;
+    }
+    const result = window.Papa.parse(text, { header: true, skipEmptyLines: true });
+    if (result.errors?.length) {
+      console.error(result.errors);
+      showToast("CSV không hợp lệ");
+      return;
+    }
+    const data = result.data;
+    if (!data.length) {
+      showToast("CSV không có dữ liệu");
+      return;
+    }
+    state.csvRows = data;
+    const headers = result.meta.fields || Object.keys(data[0]);
+    populateMappingModal(headers);
+    elements.mappingModal?.showModal();
+    showToast(`Đã đọc ${data.length} dòng từ ${fileName}`);
+  }
+
+  function populateMappingModal(headers) {
+    Object.entries(elements.mapSelects).forEach(([key, select]) => {
+      select.innerHTML = "";
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "-- Chọn cột --";
+      select.appendChild(defaultOption);
+      headers.forEach((header) => {
+        const option = document.createElement("option");
+        option.value = header;
+        option.textContent = header;
+        select.appendChild(option);
+      });
+    });
+  }
+
+  function completeCsvMapping() {
+    const mapping = {
+      prefix: elements.mapSelects.prefix.value,
+      name: elements.mapSelects.name.value,
+      title: elements.mapSelects.title.value,
+      company: elements.mapSelects.company.value,
+    };
+
+    if (!mappingSelectionsValid()) {
+      return;
+    }
+
+    state.bulkGuests = state.csvRows.map((row) => ({
+      prefix: row[mapping.prefix] || "Mr.",
+      name: row[mapping.name] || "",
+      title: row[mapping.title] || "",
+      company: row[mapping.company] || "",
+    }));
+    state.currentGuestIndex = 0;
+    applyGuestFromBulk();
+    showToast("Đã nhập danh sách khách mời");
+  }
+
+  function mappingSelectionsValid() {
+    return (
+      elements.mapSelects.prefix?.value &&
+      elements.mapSelects.name?.value &&
+      elements.mapSelects.title?.value &&
+      elements.mapSelects.company?.value
+    );
+  }
+
+  function applyGuestFromBulk() {
+    const guest = state.bulkGuests[state.currentGuestIndex];
+    if (!guest) return;
+    state.guestInfo = { ...guest };
+    renderGuestForm();
+    renderTextGroup();
+    updateGuestCounter();
+  }
+
+  function updateGuestCounter() {
+    const total = state.bulkGuests.length;
+    const current = total ? state.currentGuestIndex + 1 : 0;
+    elements.guestCounter.textContent = `Guest ${current} of ${total}`;
+    elements.prevGuest.disabled = !total || state.currentGuestIndex === 0;
+    elements.nextGuest.disabled = !total || state.currentGuestIndex === total - 1;
+  }
+
+  function showToast(message) {
+    if (!elements.toast) return;
+    elements.toast.textContent = message;
+    elements.toast.classList.add("visible");
+    clearTimeout(showToast.timeout);
+    showToast.timeout = setTimeout(() => elements.toast.classList.remove("visible"), 2600);
+  }
+</script>
+
+<style>
+  .hidden {
+    display: none !important;
+  }
+  :global(body) {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .invitation-app {
+    padding: 2.5rem clamp(1.5rem, 4vw, 4rem) 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .intro {
+    max-width: 720px;
+  }
+  .intro h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 0.5rem;
+    font-family: "Playfair Display", serif;
+  }
+  .intro p {
+    margin: 0;
+    color: rgba(226, 232, 240, 0.86);
+    line-height: 1.6;
+  }
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(320px, 380px) 1fr;
+    gap: 2rem;
+  }
+  .controls {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 1.5rem;
+    height: fit-content;
+    box-shadow: 0 24px 48px -24px rgba(15, 23, 42, 0.6);
+  }
+  .control-block h2 {
+    font-size: 1.05rem;
+    margin-bottom: 0.25rem;
+    font-family: "Montserrat", sans-serif;
+  }
+  .control-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .hint {
+    color: rgba(148, 163, 184, 0.85);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .field-group label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(148, 163, 184, 0.88);
+  }
+  .field-group input[type="text"],
+  .field-group select,
+  .field-group output {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 10px;
+    padding: 0.55rem 0.75rem;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+  }
+  .field-group input[type="range"] {
+    width: 100%;
+  }
+  .field-group.readonly output {
+    background: transparent;
+    border: none;
+    padding-left: 0;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+  .file-input {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px;
+    border: 1px dashed rgba(148, 163, 184, 0.45);
+    background: rgba(30, 41, 59, 0.6);
+    cursor: pointer;
+    color: #e2e8f0;
+    padding: 0.5rem 1rem;
+    width: fit-content;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .file-input:hover {
+    border-color: rgba(250, 204, 21, 0.8);
+    transform: translateY(-1px);
+  }
+  .file-input input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .toggle {
+    flex: 1;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    padding: 0.4rem 0.75rem;
+    background: rgba(30, 41, 59, 0.45);
+    color: #cbd5f5;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  .toggle.active {
+    background: linear-gradient(120deg, #f59e0b, #f97316);
+    border-color: transparent;
+    color: #0f172a;
+    font-weight: 600;
+  }
+  .toggle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .lock-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+  }
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: rgba(71, 85, 105, 0.7);
+    border-radius: 999px;
+    transition: 0.2s;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    top: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  input:checked + .slider {
+    background: linear-gradient(120deg, #22c55e, #16a34a);
+  }
+  input:checked + .slider:before {
+    transform: translateX(22px);
+  }
+  .lock-text {
+    color: rgba(148, 163, 184, 0.85);
+    font-size: 0.9rem;
+  }
+  .primary,
+  .secondary {
+    border-radius: 999px;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .primary {
+    background: linear-gradient(120deg, #6366f1, #8b5cf6);
+    color: #f8fafc;
+    font-weight: 600;
+  }
+  .primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 20px 40px -24px rgba(99, 102, 241, 0.8);
+  }
+  .secondary {
+    background: rgba(30, 41, 59, 0.7);
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+  .secondary:hover {
+    transform: translateY(-1px);
+  }
+  .preview {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .preview-frame {
+    position: relative;
+    background: rgba(15, 23, 42, 0.85);
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    min-height: 420px;
+    overflow: auto;
+  }
+  .preview-frame img {
+    border-radius: 14px;
+    display: block;
+  }
+  .preview-placeholder {
+    text-align: center;
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 1rem;
+  }
+  .preview-placeholder.hidden {
+    display: none;
+  }
+  .text-group {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.25rem 0.4rem;
+    border-radius: 12px;
+    cursor: grab;
+  }
+  .text-group[data-orientation="horizontal"] {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .text-group[data-align="center"] {
+    align-items: center;
+  }
+  .text-group[data-align="right"] {
+    align-items: flex-end;
+  }
+  .text-group[data-align="left"] {
+    align-items: flex-start;
+  }
+  .text-group.locked {
+    cursor: default;
+  }
+  .text-element {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    background: rgba(15, 23, 42, 0.35);
+    border-radius: 6px;
+    border: 1px solid transparent;
+    user-select: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .text-group[data-orientation="horizontal"] .text-element {
+    background: rgba(15, 23, 42, 0.45);
+  }
+  .text-element.selected {
+    border-color: rgba(96, 165, 250, 0.9);
+    background: rgba(30, 64, 175, 0.35);
+  }
+  .text-group.locked .text-element {
+    border-color: transparent !important;
+  }
+  .separator {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    user-select: none;
+  }
+  .anchor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #38bdf8;
+    background: #0ea5e9;
+    top: -28px;
+    left: -28px;
+    cursor: grab;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25);
+  }
+  .text-group.locked .anchor {
+    display: none;
+  }
+  .bulk-controls {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .bulk-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .bulk-row h2 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  .bulk-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .bulk-row.status {
+    color: rgba(226, 232, 240, 0.85);
+    font-size: 0.95rem;
+  }
+  .nav-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .nav-buttons button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .mapping-modal {
+    border: none;
+    border-radius: 20px;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.95);
+    color: #f8fafc;
+    width: min(420px, 90vw);
+    box-shadow: 0 32px 80px -40px rgba(15, 23, 42, 0.8);
+  }
+  .mapping-modal::backdrop {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+  }
+  .mapping-modal h2 {
+    margin-top: 0;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: rgba(30, 41, 59, 0.95);
+    padding: 0.9rem 1.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: #f8fafc;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+    z-index: 50;
+  }
+  .toast.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (max-width: 1120px) {
+    .workspace {
+      grid-template-columns: 1fr;
+    }
+    .controls {
+      position: static;
+    }
+    .preview-frame {
+      justify-items: center;
+    }
+  }
+  @media (max-width: 720px) {
+    .invitation-app {
+      padding: 1.5rem;
+    }
+    .bulk-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .bulk-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .nav-buttons {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+</style>
